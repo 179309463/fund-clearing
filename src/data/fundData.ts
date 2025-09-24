@@ -14,6 +14,7 @@ export interface TradeOrder {
   settlementMethod: string;
   settlementAmount: number;
   purpose: string;
+  children?: never; // 第4层没有子节点
 }
 
 export interface TransferInstruction {
@@ -22,7 +23,7 @@ export interface TransferInstruction {
   transferInstructionNumber: string;
   transferInstructionAmount: number;
   transferProgress: string;
-  tradeOrders: TradeOrder[];
+  children: TradeOrder[];
 }
 
 export interface CustodyInstitution {
@@ -38,7 +39,7 @@ export interface CustodyInstitution {
   effectiveSettlementBalance: number;
   generatedTransferAmount: number;
   ungeneratedTransferAmount: number;
-  transferInstructions: TransferInstruction[];
+  children: TransferInstruction[];
 }
 
 export interface FundData {
@@ -53,46 +54,46 @@ export interface FundData {
   trader1: string;
   trader2: string;
   requiredTransferAmount: number;
-  custodyInstitutions: CustodyInstitution[];
+  children: CustodyInstitution[];
 }
 
 // 生成基金数据的函数
 function generateFundData(): FundData[] {
   const fundData: FundData[] = [];
-  
+
   // 基础数据模板
   const fundNames = [
     '增金宝货币A', '增金宝货币B', '稳健债券基金', '成长股票基金', '价值混合基金',
     '平衡配置基金', '创新科技基金', '消费升级基金', '绿色发展基金', '智能制造基金'
   ];
-  
+
   const custodyInstitutions = [
-    '中信银行', '上海清算所', '招商银行', '工商银行', '建设银行', 
+    '中信银行', '上海清算所', '招商银行', '工商银行', '建设银行',
     '农业银行', '交通银行', '民生银行', '浦发银行', '光大银行',
     '华夏银行', '平安银行', '兴业银行', '中国银行'
   ];
-  
+
   const tradeTypes = [
     '融资回购', '现券买入', '现券卖出', '卖出回购', '买入返售', '股票买入', '股票卖出'
   ];
-  
+
   const tradeVarieties = [
-    '正回购到期', '国债现券', '企业债现券', '逆回购', '政策性金融债', 
+    '正回购到期', '国债现券', '企业债现券', '逆回购', '政策性金融债',
     '地方政府债', '同业存单', '金融债现券', '可转债', 'A股现货'
   ];
-  
+
   const bondNames = [
     '3年期国债', '5年期国债', '10年期国债', '30年期国债', '某企业债券',
     '国开债', '农发债', '进出口银行债', '广东省政府债', '上海市政府债',
     '某银行同业存单', '政策性银行债', '商业银行债', '某科技可转债', '某银行可转债',
     '某科技股票', '某医药股票', '某消费股票', '某金融股票', '某制造股票'
   ];
-  
+
   const statuses = ['已开启', '未开启', '已生成', '未生成'];
   const progressStatuses = ['已完成', '进行中', '待处理', '超时'];
   const validStatuses = ['正常', '异常'];
   const settlementStatuses = ['成功', '处理中', '失败'];
-  
+
   // 生成10个基金
   for (let fundIndex = 1; fundIndex <= 10; fundIndex++) {
     const fund = {
@@ -103,13 +104,13 @@ function generateFundData(): FundData[] {
       ossBankBalance: fundIndex * 1.00,
       endDayBankDeposit: fundIndex * 1000000.00,
       endDayBankDepositWithInquiry: fundIndex * 1000000.00,
-      custodyBank: `020-${Math.random().toString().substr(2, 8)}`,
+      custodyBank: `020-${Math.random().toString().substring(2, 10)}`,
       trader1: `交易员${fundIndex}A`,
       trader2: `交易员${fundIndex}B`,
       requiredTransferAmount: fundIndex * 1000000.00,
-      custodyInstitutions: []
+      children: []
     };
-    
+
     // 每个基金生成4个托管机构
     for (let custodyIndex = 1; custodyIndex <= 4; custodyIndex++) {
       const custody = {
@@ -125,9 +126,9 @@ function generateFundData(): FundData[] {
         effectiveSettlementBalance: (fundIndex * custodyIndex) * 100000.00,
         generatedTransferAmount: (fundIndex * custodyIndex) * 100000.00,
         ungeneratedTransferAmount: (fundIndex * custodyIndex) * 100000.00,
-        transferInstructions: []
+        children: []
       };
-      
+
       // 每个托管机构生成4个划款指令
       for (let instructionIndex = 1; instructionIndex <= 4; instructionIndex++) {
         const instructionId = (fundIndex - 1) * 16 + (custodyIndex - 1) * 4 + instructionIndex;
@@ -137,9 +138,9 @@ function generateFundData(): FundData[] {
           transferInstructionNumber: instructionId.toString().padStart(18, '0'),
           transferInstructionAmount: (fundIndex * custodyIndex * instructionIndex) * 50000000.00,
           transferProgress: progressStatuses[Math.floor(Math.random() * progressStatuses.length)],
-          tradeOrders: []
+          children: []
         };
-        
+
         // 每个划款指令生成4个成交单
         for (let orderIndex = 1; orderIndex <= 4; orderIndex++) {
           const orderNumber = ((fundIndex - 1) * 64 + (custodyIndex - 1) * 16 + (instructionIndex - 1) * 4 + orderIndex);
@@ -149,7 +150,7 @@ function generateFundData(): FundData[] {
             instructionStatus: Math.random() > 0.5 ? '已生成' : '未生成',
             validStatus: validStatuses[Math.floor(Math.random() * validStatuses.length)],
             fundSettlementStatus: settlementStatuses[Math.floor(Math.random() * settlementStatuses.length)],
-            tradeOrderNumber: fundIndex.toString().repeat(20).substring(0, 20).replace(/.{4}/g, (match) => 
+            tradeOrderNumber: fundIndex.toString().repeat(20).substring(0, 20).replace(/.{4}/g, (match) =>
               match.split('').map(char => String(parseInt(char) + orderNumber % 10).slice(-1)).join('')
             ),
             tradeType: tradeTypes[Math.floor(Math.random() * tradeTypes.length)],
@@ -161,19 +162,19 @@ function generateFundData(): FundData[] {
             settlementAmount: (500000 + Math.floor(Math.random() * 2000000)),
             purpose: ['资产配置', '流动性管理', '投资调整', '资金融通', '投资交易', '股票投资'][Math.floor(Math.random() * 6)]
           };
-          
-          instruction.tradeOrders.push(order);
+
+          instruction.children.push(order);
         }
-        
-        custody.transferInstructions.push(instruction);
+
+        custody.children.push(instruction);
       }
-      
-      fund.custodyInstitutions.push(custody);
+
+      fund.children.push(custody);
     }
-    
+
     fundData.push(fund);
   }
-  
+
   return fundData;
 }
 

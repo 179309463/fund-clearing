@@ -68,14 +68,14 @@ const FundClearingWorkstation: React.FC = () => {
     const countRows = (items: any[]) => {
       items.forEach(item => {
         count++;
-        if (item.custodyInstitutions) {
-          item.custodyInstitutions.forEach((custody: any) => {
+        if (item.children) {
+          item.children.forEach((custody: any) => {
             count++;
-            if (custody.transferInstructions) {
-              custody.transferInstructions.forEach((transfer: any) => {
+            if (custody.children) {
+              custody.children.forEach((transfer: any) => {
                 count++;
-                if (transfer.tradeOrders) {
-                  count += transfer.tradeOrders.length;
+                if (transfer.children) {
+                  count += transfer.children.length;
                 }
               });
             }
@@ -91,9 +91,9 @@ const FundClearingWorkstation: React.FC = () => {
   const calculateTradeOrderTotalCount = useCallback((data: FundData[]): number => {
     let count = 0;
     data.forEach(fund => {
-      fund.custodyInstitutions?.forEach(custody => {
-        custody.transferInstructions?.forEach(transfer => {
-          count += transfer.tradeOrders?.length || 0;
+      fund.children?.forEach(custody => {
+        custody.children?.forEach(transfer => {
+          count += transfer.children?.length || 0;
         });
       });
     });
@@ -120,18 +120,18 @@ const FundClearingWorkstation: React.FC = () => {
         if (item.selected) {
           totalSelected++;
         }
-        if (item.custodyInstitutions) {
-          item.custodyInstitutions.forEach((custody: any) => {
+        if (item.children) {
+          item.children.forEach((custody: any) => {
             if (custody.selected) {
               totalSelected++;
             }
-            if (custody.transferInstructions) {
-              custody.transferInstructions.forEach((transfer: any) => {
+            if (custody.children) {
+              custody.children.forEach((transfer: any) => {
                 if (transfer.selected) {
                   totalSelected++;
                 }
-                if (transfer.tradeOrders) {
-                  transfer.tradeOrders.forEach((order: any) => {
+                if (transfer.children) {
+                  transfer.children.forEach((order: any) => {
                     if (order.selected) {
                       totalSelected++;
                       tradeOrderSelected++;
@@ -194,8 +194,8 @@ const FundClearingWorkstation: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 0
-      },
+        padding: '0'
+      } as any,
       headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
@@ -288,8 +288,8 @@ const FundClearingWorkstation: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 0
-      },
+        padding: '0'
+      } as any,
       headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
@@ -381,8 +381,8 @@ const FundClearingWorkstation: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 0
-      },
+        padding: '0'
+      } as any,
       headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
@@ -432,8 +432,8 @@ const FundClearingWorkstation: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 0
-      },
+        padding: '0'
+      } as any,
       headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
@@ -508,10 +508,7 @@ const FundClearingWorkstation: React.FC = () => {
       },
       masterDetail: true,
       detailRowAutoHeight: true,
-      rowSelection: 'multiple',
-      suppressRowClickSelection: true,
       suppressCellFocus: true,
-      suppressRowDeselection: false,
       onGridReady: (params: any) => {
         gridInstances.current.add(params.api);
       },
@@ -545,17 +542,17 @@ const FundClearingWorkstation: React.FC = () => {
               onSelectionChanged: updateSelectionCounts,
             },
             getDetailRowData: (params: any) => {
-              params.successCallback(params.data.tradeOrders || []);
+              params.successCallback(params.data.children || []);
             },
           },
         },
         getDetailRowData: (params: any) => {
-          params.successCallback(params.data.transferInstructions || []);
+          params.successCallback(params.data.children || []);
         },
       },
     },
     getDetailRowData: (params: any) => {
-      params.successCallback(params.data.custodyInstitutions || []);
+      params.successCallback(params.data.children || []);
     },
   }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef, updateSelectionCounts]);
 
