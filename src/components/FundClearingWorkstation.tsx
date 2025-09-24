@@ -3,11 +3,13 @@ import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridReadyEvent, SelectionChangedEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { MasterDetailModule } from 'ag-grid-enterprise';
+import '../styles/custom-checkbox.css';
 
 import { fundData, FundData } from '../data/fundData';
 import OperationPanel from './OperationPanel';
 import StatusBadge from './StatusBadge';
 import CustomCheckboxRenderer from './CustomCheckboxRenderer';
+import CustomCheckboxHeaderRenderer from './CustomCheckboxHeaderRenderer';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule, MasterDetailModule]);
@@ -181,6 +183,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
+      headerComponent: CustomCheckboxHeaderRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
@@ -193,6 +196,7 @@ const FundClearingWorkstation: React.FC = () => {
         justifyContent: 'center',
         padding: 0
       },
+      headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
     {
@@ -273,6 +277,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
+      headerComponent: CustomCheckboxHeaderRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
@@ -285,6 +290,7 @@ const FundClearingWorkstation: React.FC = () => {
         justifyContent: 'center',
         padding: 0
       },
+      headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
     {
@@ -364,6 +370,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
+      headerComponent: CustomCheckboxHeaderRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
@@ -376,6 +383,7 @@ const FundClearingWorkstation: React.FC = () => {
         justifyContent: 'center',
         padding: 0
       },
+      headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
     {
@@ -413,6 +421,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
+      headerComponent: CustomCheckboxHeaderRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
@@ -425,6 +434,7 @@ const FundClearingWorkstation: React.FC = () => {
         justifyContent: 'center',
         padding: 0
       },
+      headerClass: 'custom-checkbox-header',
       valueGetter: (params) => params.data?.selected || false,
     },
     {
