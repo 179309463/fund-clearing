@@ -90,32 +90,27 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
       return { checked: data.selected || false, indeterminate: false };
     }
 
-    // 第1/2/3层：根据子节点中未完成成交单的选择状态决定
+    // 第1/2/3层：根据子节点中成交单的选择状态决定
     const stats = getTradeOrderStats(data);
 
-
-
-    // 如果没有未完成的成交单，则根据自身状态决定
+    // 如果没有成交单，则根据自身状态决定
     if (stats.totalCount === 0) {
       return { checked: data.selected || false, indeterminate: false };
     }
 
-    // 有未完成的成交单时，根据未完成成交单的选择情况决定
-
-
+    // 有成交单时，根据成交单的选择情况决定
     let result;
     if (stats.selectedCount === 0) {
-      // 没有未完成成交单被选中
+      // 没有成交单被选中
       result = { checked: false, indeterminate: false };
     } else if (stats.selectedCount === stats.totalCount) {
-      // 所有未完成成交单都被选中
+      // 所有成交单都被选中
       result = { checked: true, indeterminate: false };
     } else {
-      // 部分未完成成交单被选中
+      // 部分成交单被选中
       result = { checked: false, indeterminate: true };
     }
     return result;
-
   };
 
   const checkboxState = getCheckboxState();
@@ -129,19 +124,14 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
 
       // 如果是第4层成交单，只设置自己，不处理子节点
       if (data.nodeType === NodeType.TRADE_ORDER) {
-
+        // 成交单节点无需级联处理
       } else {
         // 对于第1/2/3层级，执行级联选择
-        console.log(`Starting cascade for ${data.id}...`);
-
         // 判断当前是否为半选状态
         const currentCheckboxState = getCheckboxState();
         const isFromIndeterminate = currentCheckboxState.indeterminate;
 
         cascadeSelection(data, newValue, isFromIndeterminate);
-
-        const statsAfter = getTradeOrderStats(data);
-        console.log(`Cascade completed. Stats:`, statsAfter);
       }
 
       // 精确刷新 - 只刷新复选框列，不影响展开状态

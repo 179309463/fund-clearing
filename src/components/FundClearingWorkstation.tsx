@@ -583,27 +583,7 @@ const FundClearingWorkstation: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-900">基金清算工作台</h1>
         <p className="text-sm text-gray-600 mt-1">Fund Clearing Workstation - Multi-Level Nested Grid</p>
         
-        <button 
-          onClick={() => {
-            console.log('=== Current Data State ===');
-            memoizedFundData.forEach(fund => {
-              console.log(`Fund ${fund.id}: selected=${fund.selected}`);
-              fund.children?.forEach(custody => {
-                console.log(`  Custody ${custody.id}: selected=${custody.selected}`);
-                custody.children?.forEach(instruction => {
-                  console.log(`    Instruction ${instruction.id}: selected=${instruction.selected}`);
-                  instruction.children?.forEach(order => {
-                    console.log(`      Order ${order.id} (${order.instructionStatus}): selected=${order.selected}`);
-                  });
-                });
-              });
-            });
-          }}
-          className="mt-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
-        >
-          Check Data State
-        </button>
-        
+
 
       </div>
 
