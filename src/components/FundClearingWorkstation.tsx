@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridReadyEvent, SelectionChangedEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import 'ag-grid-community/styles/ag-theme-balham.css';
 import { MasterDetailModule } from 'ag-grid-enterprise';
 import '../styles/custom-checkbox.css';
 
@@ -590,7 +590,7 @@ const FundClearingWorkstation: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         <div className="bg-white h-full" style={{ paddingBottom: `${operationPanelHeight}px` }}>
-          <div className="ag-theme-alpine h-full">
+          <div className="ag-theme-balham h-full">
             <AgGridReact
               ref={gridRef}
               rowData={memoizedFundData}
