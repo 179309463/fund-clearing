@@ -529,6 +529,7 @@ const FundClearingWorkstation: React.FC = () => {
       masterDetail: true,
       detailRowAutoHeight: true,
       suppressCellFocus: true,
+      groupDefaultExpanded: -1,
       onGridReady: (params: any) => {
         gridInstances.current.add(params.api);
       },
@@ -543,6 +544,7 @@ const FundClearingWorkstation: React.FC = () => {
           masterDetail: true,
           detailRowAutoHeight: true,
           suppressCellFocus: true,
+          groupDefaultExpanded: -1,
           onGridReady: (params: any) => {
             gridInstances.current.add(params.api);
           },
