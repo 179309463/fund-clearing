@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ICellRendererParams } from 'ag-grid-community';
+import { NodeType } from '../data/fundData';
 
 interface CustomCheckboxRendererProps extends ICellRendererParams {
   data: any;
@@ -8,30 +9,175 @@ interface CustomCheckboxRendererProps extends ICellRendererParams {
   node: any;
 }
 
-const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, api, node }) => {
-  const isChecked = data?.selected || false;
+const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, api }) => {
+  // 添加一个状态来强制重新渲染
+  const [, forceUpdate] = useState({});
+
+  // 递归统计所有成交单的选择状态
+  const getTradeOrderStats = (nodeData: any): { selectedUncompletedCount: number; totalUncompletedCount: number } => {
+    let selectedUncompletedCount = 0;
+    let totalUncompletedCount = 0;
+
+    const traverse = (item: any) => {
+      if (item.nodeType === NodeType.TRADE_ORDER) {
+        const isUncompleted = item.instructionStatus === '未生成';
+        if (isUncompleted) {
+          totalUncompletedCount++;
+          if (item.selected) {
+            selectedUncompletedCount++;
+          }
+        }
+      }
+
+      if (item.children && Array.isArray(item.children)) {
+        item.children.forEach(traverse);
+      }
+    };
+
+    traverse(nodeData);
+    return { selectedUncompletedCount, totalUncompletedCount };
+  };
+
+  // 递归设置所有子节点的选择状态
+  const cascadeSelection = (nodeData: any, selected: boolean) => {
+    const traverse = (item: any) => {
+      if (item.nodeType === NodeType.TRADE_ORDER) {
+        // 成交单节点
+        if (selected) {
+          // 勾选时：只选择未完成状态的成交单
+          if (item.instructionStatus === '未生成') {
+            item.selected = true;
+          }
+          // 已完成的成交单保持原状态不变
+        } else {
+          // 取消勾选时：取消所有成交单的选择（不管状态）
+          item.selected = false;
+        }
+      } else {
+        // 非成交单节点：先递归处理子节点，然后根据子节点状态决定自己的状态
+        if (item.children && Array.isArray(item.children)) {
+          item.children.forEach(traverse);
+        }
+
+        // 处理完子节点后，根据子节点的未完成成交单状态决定自己的状态
+        if (selected) {
+          // 勾选时：只有当有未完成成交单被选中时，才选中自己
+          const stats = getTradeOrderStats(item);
+          item.selected = stats.selectedUncompletedCount > 0;
+        } else {
+          // 取消勾选时：直接取消选择
+          item.selected = false;
+        }
+      }
+    };
+
+    // 从当前节点的子节点开始遍历
+    if (nodeData.children && Array.isArray(nodeData.children)) {
+      nodeData.children.forEach(traverse);
+    }
+  };
+
+  // 计算复选框状态
+  const getCheckboxState = () => {
+    if (!data) {
+      return { checked: false, indeterminate: false };
+    }
+
+    // 第4层成交单：直接返回自己的选择状态
+    if (data.nodeType === NodeType.TRADE_ORDER) {
+      return { checked: data.selected || false, indeterminate: false };
+    }
+
+    // 第1/2/3层：根据子节点中未完成成交单的选择状态决定
+    const stats = getTradeOrderStats(data);
+
+
+
+    // 如果没有未完成的成交单，则根据自身状态决定
+    if (stats.totalUncompletedCount === 0) {
+      return { checked: data.selected || false, indeterminate: false };
+    }
+
+    // 有未完成的成交单时，根据未完成成交单的选择情况决定
+
+    /* 
+    // 备用：3状态逻辑（全选/半选/未选择）
+    let result;
+    if (stats.selectedUncompletedCount === 0) {
+      // 没有未完成成交单被选中
+      result = { checked: false, indeterminate: false };
+    } else if (stats.selectedUncompletedCount === stats.totalUncompletedCount) {
+      // 所有未完成成交单都被选中
+      result = { checked: true, indeterminate: false };
+    } else {
+      // 部分未完成成交单被选中
+      result = { checked: false, indeterminate: true };
+    }
+    return result;
+    */
+
+    // 简化为2个状态：只要有未完成成交单被选中就显示为选中状态
+    const result = {
+      checked: stats.selectedUncompletedCount > 0,
+      indeterminate: false
+    };
+
+    return result;
+  };
+
+  const checkboxState = getCheckboxState();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.checked;
+
+
+
     if (data) {
+      // 设置当前节点的状态
       data.selected = newValue;
-      
-      // 刷新当前行
-      if (node) {
-        api.refreshCells({ rowNodes: [node] });
+
+      // 如果是第4层成交单，只设置自己，不处理子节点
+      if (data.nodeType === NodeType.TRADE_ORDER) {
+
+      } else {
+        // 对于第1/2/3层级，执行级联选择
+        console.log(`Starting cascade for ${data.id}...`);
+        cascadeSelection(data, newValue);
+
+        const statsAfter = getTradeOrderStats(data);
+        console.log(`Cascade completed. Stats:`, statsAfter);
       }
-      
-      // 触发选择变化事件
+
+      // 精确刷新 - 只刷新复选框列，不影响展开状态
+
+      // 1. 立即强制重新渲染当前组件
+      forceUpdate({});
+
+      // 2. 只刷新复选框列，不重绘整行
+      api.refreshCells({
+        columns: ['selected'],
+        force: true
+      });
+
+      // 3. 延迟刷新以确保数据传播到子网格
       setTimeout(() => {
+        // 触发全局刷新事件
+        const event = new CustomEvent('refreshAllGrids');
+        window.dispatchEvent(event);
+
+        // 再次强制重新渲染
+        forceUpdate({});
+
+        // 触发选择变化事件
         api.dispatchEvent({ type: 'selectionChanged' });
-      }, 0);
+      }, 50);
     }
   };
 
   return (
-    <div 
+    <div
       className="w-full h-full flex items-center justify-center"
-      style={{ 
+      style={{
         height: '100%',
         display: 'flex',
         alignItems: 'center',
@@ -41,7 +187,12 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
     >
       <input
         type="checkbox"
-        checked={isChecked}
+        checked={checkboxState.checked}
+        ref={(input) => {
+          if (input) {
+            input.indeterminate = checkboxState.indeterminate;
+          }
+        }}
         onChange={handleChange}
         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
         style={{ margin: 0 }}

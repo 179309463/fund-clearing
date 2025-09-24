@@ -9,7 +9,7 @@ export enum NodeType {
 // 定义数据类型
 export interface TradeOrder {
   id: string;
-  nodeType: NodeType.TRADE_ORDER;
+  nodeType: NodeType;
   selected: boolean;
   instructionStatus: string;
   validStatus: string;
@@ -23,12 +23,12 @@ export interface TradeOrder {
   settlementMethod: string;
   settlementAmount: number;
   purpose: string;
-  children?: never; // 第4层没有子节点
+  children?: TradeOrder[]; // 第4层没有子节点，但类型上保持一致
 }
 
 export interface TransferInstruction {
   id: string;
-  nodeType: NodeType.INSTRUCTION;
+  nodeType: NodeType;
   selected: boolean;
   transferInstructionNumber: string;
   transferInstructionAmount: number;
@@ -38,7 +38,7 @@ export interface TransferInstruction {
 
 export interface CustodyInstitution {
   id: string;
-  nodeType: NodeType.CUSTODY;
+  nodeType: NodeType;
   selected: boolean;
   autoClearingStatus: string;
   transferApplicationStatus: string;
@@ -55,7 +55,7 @@ export interface CustodyInstitution {
 
 export interface FundData {
   id: string;
-  nodeType: NodeType.FUND;
+  nodeType: NodeType;
   selected: boolean;
   fundCode: string;
   fundName: string;

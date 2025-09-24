@@ -110,6 +110,44 @@ const FundClearingWorkstation: React.FC = () => {
   // 用于存储所有网格实例的引用
   const gridInstances = useRef<Set<any>>(new Set());
 
+  // 添加全局刷新监听器
+  useEffect(() => {
+    const handleRefreshAllGrids = () => {
+      console.log('=== Global checkbox refresh triggered ===');
+      console.log('Grid instances count:', gridInstances.current.size);
+      
+      // 只刷新主网格的复选框列
+      if (gridRef.current?.api) {
+        console.log('Refreshing main grid checkboxes...');
+        gridRef.current.api.refreshCells({ 
+          columns: ['selected'], 
+          force: true 
+        });
+      }
+      
+      // 只刷新所有子网格的复选框列
+      let refreshCount = 0;
+      gridInstances.current.forEach(gridApi => {
+        if (gridApi && gridApi.refreshCells) {
+          console.log(`Refreshing sub-grid ${refreshCount} checkboxes...`);
+          gridApi.refreshCells({ 
+            columns: ['selected'], 
+            force: true 
+          });
+          refreshCount++;
+        }
+      });
+      
+      console.log(`Refreshed checkboxes in ${refreshCount} sub-grids`);
+    };
+
+    window.addEventListener('refreshAllGrids', handleRefreshAllGrids);
+    
+    return () => {
+      window.removeEventListener('refreshAllGrids', handleRefreshAllGrids);
+    };
+  }, []);
+
   const updateSelectionCounts = useCallback(() => {
     let totalSelected = 0;
     let tradeOrderSelected = 0;
@@ -547,6 +585,29 @@ const FundClearingWorkstation: React.FC = () => {
       <div className="bg-white shadow-sm border-b px-6 py-4">
         <h1 className="text-2xl font-semibold text-gray-900">基金清算工作台</h1>
         <p className="text-sm text-gray-600 mt-1">Fund Clearing Workstation - Multi-Level Nested Grid</p>
+        
+        <button 
+          onClick={() => {
+            console.log('=== Current Data State ===');
+            memoizedFundData.forEach(fund => {
+              console.log(`Fund ${fund.id}: selected=${fund.selected}`);
+              fund.children?.forEach(custody => {
+                console.log(`  Custody ${custody.id}: selected=${custody.selected}`);
+                custody.children?.forEach(instruction => {
+                  console.log(`    Instruction ${instruction.id}: selected=${instruction.selected}`);
+                  instruction.children?.forEach(order => {
+                    console.log(`      Order ${order.id} (${order.instructionStatus}): selected=${order.selected}`);
+                  });
+                });
+              });
+            });
+          }}
+          className="mt-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+        >
+          Check Data State
+        </button>
+        
+
       </div>
 
       {/* Main Content */}
