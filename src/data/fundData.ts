@@ -124,8 +124,9 @@ function generateFundData(): FundData[] {
       children: []
     };
 
-    // 每个基金生成4个托管机构
-    for (let custodyIndex = 1; custodyIndex <= 4; custodyIndex++) {
+    // 每个基金生成1-3个托管机构
+    const custodyCount = Math.floor(Math.random() * 3) + 1; // 1-3个
+    for (let custodyIndex = 1; custodyIndex <= custodyCount; custodyIndex++) {
       const custody = {
         id: `${fundIndex}-${custodyIndex}`,
         nodeType: NodeType.CUSTODY,
@@ -143,22 +144,24 @@ function generateFundData(): FundData[] {
         children: []
       };
 
-      // 每个托管机构生成4个划款指令
-      for (let instructionIndex = 1; instructionIndex <= 4; instructionIndex++) {
-        const instructionId = (fundIndex - 1) * 16 + (custodyIndex - 1) * 4 + instructionIndex;
+      // 每个托管机构生成1-3个划款指令
+      const instructionCount = Math.floor(Math.random() * 3) + 1; // 1-3个
+      for (let instructionIndex = 1; instructionIndex <= instructionCount; instructionIndex++) {
+        const instructionId = `${fundIndex}${custodyIndex}${instructionIndex}`.padStart(6, '0');
         const instruction = {
           id: `${fundIndex}-${custodyIndex}-${instructionIndex}`,
           nodeType: NodeType.INSTRUCTION,
           selected: false,
-          transferInstructionNumber: instructionId.toString().padStart(18, '0'),
+          transferInstructionNumber: instructionId.padStart(18, '0'),
           transferInstructionAmount: (fundIndex * custodyIndex * instructionIndex) * 50000000.00,
           transferProgress: progressStatuses[Math.floor(Math.random() * progressStatuses.length)],
           children: []
         };
 
-        // 每个划款指令生成4个成交单
-        for (let orderIndex = 1; orderIndex <= 4; orderIndex++) {
-          const orderNumber = ((fundIndex - 1) * 64 + (custodyIndex - 1) * 16 + (instructionIndex - 1) * 4 + orderIndex);
+        // 每个划款指令生成3-5个成交单
+        const orderCount = Math.floor(Math.random() * 3) + 3; // 3-5个
+        for (let orderIndex = 1; orderIndex <= orderCount; orderIndex++) {
+          const orderNumber = parseInt(`${fundIndex}${custodyIndex}${instructionIndex}${orderIndex}`);
           const order = {
             id: `${fundIndex}-${custodyIndex}-${instructionIndex}-${orderIndex}`,
             nodeType: NodeType.TRADE_ORDER,
@@ -194,14 +197,9 @@ function generateFundData(): FundData[] {
   return fundData;
 }
 
-// 导出生成的数据 - 只生成一次，避免每次导入都重新生成
-let _fundData: any[] | null = null;
-
+// 导出生成的数据 - 每次都重新生成以获得随机数量
 export const getFundData = () => {
-  if (_fundData === null) {
-    _fundData = generateFundData();
-  }
-  return _fundData;
+  return generateFundData();
 };
 
 // 为了保持向后兼容，导出静态数据
