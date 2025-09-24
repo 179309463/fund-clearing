@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, GridApi, GridReadyEvent, SelectionChangedEvent, IDetailCellRendererParams, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { ColDef, GridReadyEvent, SelectionChangedEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { MasterDetailModule } from 'ag-grid-enterprise';
 
 import { fundData, FundData } from '../data/fundData';
 import OperationPanel from './OperationPanel';
 import StatusBadge from './StatusBadge';
+import CustomCheckboxRenderer from './CustomCheckboxRenderer';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule, MasterDetailModule]);
@@ -107,32 +108,50 @@ const FundClearingWorkstation: React.FC = () => {
   // 用于存储所有网格实例的引用
   const gridInstances = useRef<Set<any>>(new Set());
 
-  const updateTradeOrderSelection = useCallback(() => {
+  const updateSelectionCounts = useCallback(() => {
+    let totalSelected = 0;
     let tradeOrderSelected = 0;
     
-    // 遍历所有网格实例，统计第4层（成交单）的选中数量
-    gridInstances.current.forEach(gridApi => {
-      if (gridApi && gridApi.getSelectedNodes) {
-        const selectedNodes = gridApi.getSelectedNodes();
-        // 检查是否是第4层网格（成交单层）
-        selectedNodes.forEach(node => {
-          if (node.data && node.data.tradeOrderNumber) {
-            tradeOrderSelected++;
-          }
-        });
-      }
-    });
-    
+    // 统计所有层级的选中数量
+    const countSelected = (items: any[]) => {
+      items.forEach(item => {
+        if (item.selected) {
+          totalSelected++;
+        }
+        if (item.custodyInstitutions) {
+          item.custodyInstitutions.forEach((custody: any) => {
+            if (custody.selected) {
+              totalSelected++;
+            }
+            if (custody.transferInstructions) {
+              custody.transferInstructions.forEach((transfer: any) => {
+                if (transfer.selected) {
+                  totalSelected++;
+                }
+                if (transfer.tradeOrders) {
+                  transfer.tradeOrders.forEach((order: any) => {
+                    if (order.selected) {
+                      totalSelected++;
+                      tradeOrderSelected++;
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    };
+
+    countSelected(memoizedFundData);
+    setSelectedCount(totalSelected);
     setTradeOrderSelectedCount(tradeOrderSelected);
-  }, []);
+  }, [memoizedFundData]);
 
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
-    const selectedNodes = event.api.getSelectedNodes();
-    setSelectedCount(selectedNodes.length);
-    
-    // 更新成交单选择统计
-    updateTradeOrderSelection();
-  }, [updateTradeOrderSelection]);
+    // 更新选择统计
+    updateSelectionCounts();
+  }, [updateSelectionCounts]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     params.api.sizeColumnsToFit();
@@ -161,22 +180,20 @@ const FundClearingWorkstation: React.FC = () => {
     {
       headerName: '',
       field: 'selected',
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
+      cellRenderer: CustomCheckboxRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
-      valueGetter: (params) => params.data?.selected || false,
-      valueSetter: (params) => {
-        if (params.data) {
-          params.data.selected = params.newValue;
-          return true;
-        }
-        return false;
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 0
       },
+      valueGetter: (params) => params.data?.selected || false,
     },
     {
       headerName: '基金代码',
@@ -255,22 +272,20 @@ const FundClearingWorkstation: React.FC = () => {
     {
       headerName: '',
       field: 'selected',
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
+      cellRenderer: CustomCheckboxRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
-      valueGetter: (params) => params.data?.selected || false,
-      valueSetter: (params) => {
-        if (params.data) {
-          params.data.selected = params.newValue;
-          return true;
-        }
-        return false;
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 0
       },
+      valueGetter: (params) => params.data?.selected || false,
     },
     {
       headerName: '托管机构',
@@ -348,22 +363,20 @@ const FundClearingWorkstation: React.FC = () => {
     {
       headerName: '',
       field: 'selected',
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
+      cellRenderer: CustomCheckboxRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
-      valueGetter: (params) => params.data?.selected || false,
-      valueSetter: (params) => {
-        if (params.data) {
-          params.data.selected = params.newValue;
-          return true;
-        }
-        return false;
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 0
       },
+      valueGetter: (params) => params.data?.selected || false,
     },
     {
       headerName: '划款指令编号',
@@ -399,22 +412,20 @@ const FundClearingWorkstation: React.FC = () => {
     {
       headerName: '',
       field: 'selected',
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
+      cellRenderer: CustomCheckboxRenderer,
       width: 54,
       maxWidth: 54,
       minWidth: 54,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
-      valueGetter: (params) => params.data?.selected || false,
-      valueSetter: (params) => {
-        if (params.data) {
-          params.data.selected = params.newValue;
-          return true;
-        }
-        return false;
+      cellStyle: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 0
       },
+      valueGetter: (params) => params.data?.selected || false,
     },
     {
       headerName: '成交单编号',
@@ -494,7 +505,7 @@ const FundClearingWorkstation: React.FC = () => {
       onGridReady: (params: any) => {
         gridInstances.current.add(params.api);
       },
-      onSelectionChanged: updateTradeOrderSelection,
+      onSelectionChanged: updateSelectionCounts,
       detailCellRendererParams: {
         detailGridOptions: {
           columnDefs: level3ColumnDefs,
@@ -504,14 +515,11 @@ const FundClearingWorkstation: React.FC = () => {
           },
           masterDetail: true,
           detailRowAutoHeight: true,
-          rowSelection: 'multiple',
-          suppressRowClickSelection: true,
           suppressCellFocus: true,
-          suppressRowDeselection: false,
           onGridReady: (params: any) => {
             gridInstances.current.add(params.api);
           },
-          onSelectionChanged: updateTradeOrderSelection,
+          onSelectionChanged: updateSelectionCounts,
           detailCellRendererParams: {
             detailGridOptions: {
               columnDefs: level4ColumnDefs,
@@ -519,15 +527,12 @@ const FundClearingWorkstation: React.FC = () => {
                 ...defaultColDef,
                 suppressSizeToFit: false,
               },
-              rowSelection: 'multiple',
-              suppressRowClickSelection: true,
               detailRowAutoHeight: true,
               suppressCellFocus: true,
-              suppressRowDeselection: false,
               onGridReady: (params: any) => {
                 gridInstances.current.add(params.api);
               },
-              onSelectionChanged: updateTradeOrderSelection,
+              onSelectionChanged: updateSelectionCounts,
             },
             getDetailRowData: (params: any) => {
               params.successCallback(params.data.tradeOrders || []);
@@ -542,7 +547,7 @@ const FundClearingWorkstation: React.FC = () => {
     getDetailRowData: (params: any) => {
       params.successCallback(params.data.custodyInstitutions || []);
     },
-  }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef, updateTradeOrderSelection]);
+  }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef, updateSelectionCounts]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -564,11 +569,8 @@ const FundClearingWorkstation: React.FC = () => {
               masterDetail={true}
               detailRowAutoHeight={true}
               detailCellRendererParams={detailCellRendererParams}
-              rowSelection="multiple"
-              suppressRowClickSelection={true}
               onGridReady={onGridReady}
               onSelectionChanged={onSelectionChanged}
-              suppressRowDeselection={false}
               groupDefaultExpanded={0}
               animateRows={false}
               enableCellTextSelection={true}
