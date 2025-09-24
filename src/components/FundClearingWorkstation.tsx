@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridApi, GridReadyEvent, SelectionChangedEvent, IDetailCellRendererParams, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { MasterDetailModule } from 'ag-grid-enterprise';
 
-import { fundData } from '../data/fundData';
+import { fundData, FundData } from '../data/fundData';
 import OperationPanel from './OperationPanel';
 import StatusBadge from './StatusBadge';
 
@@ -27,6 +27,9 @@ const FundClearingWorkstation: React.FC = () => {
     custodyTimeout: false,
     awaitingUnlocking: false,
   });
+
+  // 使用useMemo确保数据引用稳定，避免不必要的重新渲染
+  const memoizedFundData = useMemo(() => fundData, []);
 
   // 动态计算操作面板高度
   useEffect(() => {
@@ -54,9 +57,9 @@ const FundClearingWorkstation: React.FC = () => {
       resizeObserver.disconnect();
     };
   }, []);
-  const calculateTotalCount = useCallback((data: any[]): number => {
+  const calculateTotalCount = useCallback((data: FundData[]): number => {
     let count = 0;
-    
+
     const countRows = (items: any[]) => {
       items.forEach(item => {
         count++;
@@ -75,15 +78,15 @@ const FundClearingWorkstation: React.FC = () => {
         }
       });
     };
-    
+
     countRows(data);
     return count;
   }, []);
 
   useEffect(() => {
-    const total = calculateTotalCount(fundData);
+    const total = calculateTotalCount(memoizedFundData);
     setTotalCount(total);
-  }, [calculateTotalCount]);
+  }, [calculateTotalCount, memoizedFundData]);
 
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
     const selectedNodes = event.api.getSelectedNodes();
@@ -94,14 +97,15 @@ const FundClearingWorkstation: React.FC = () => {
     params.api.sizeColumnsToFit();
   }, []);
 
-  const defaultColDef: ColDef = {
+  // 使用useMemo缓存配置对象，避免每次渲染都重新创建
+  const defaultColDef: ColDef = useMemo(() => ({
     resizable: true,
     sortable: true,
     flex: 1,
     minWidth: 100,
-  };
+  }), []);
 
-  const columnDefs: ColDef[] = [
+  const columnDefs: ColDef[] = useMemo(() => [
     {
       headerName: '',
       field: 'expand',
@@ -185,9 +189,9 @@ const FundClearingWorkstation: React.FC = () => {
       cellStyle: { color: '#ef4444', fontWeight: 'bold' },
       minWidth: 150,
     },
-  ];
+  ], []);
 
-  const level2ColumnDefs: ColDef[] = [
+  const level2ColumnDefs: ColDef[] = useMemo(() => [
     {
       headerName: '',
       field: 'expand',
@@ -270,9 +274,9 @@ const FundClearingWorkstation: React.FC = () => {
       valueFormatter: (params) => params.value?.toLocaleString() || '0',
       minWidth: 180,
     },
-  ];
+  ], []);
 
-  const level3ColumnDefs: ColDef[] = [
+  const level3ColumnDefs: ColDef[] = useMemo(() => [
     {
       headerName: '',
       field: 'expand',
@@ -313,9 +317,9 @@ const FundClearingWorkstation: React.FC = () => {
       field: 'transferProgress',
       cellRenderer: (params: any) => <StatusBadge status={params.value} type="progress" />,
     },
-  ];
+  ], []);
 
-  const level4ColumnDefs: ColDef[] = [
+  const level4ColumnDefs: ColDef[] = useMemo(() => [
     {
       headerName: '',
       field: 'indent',
@@ -399,9 +403,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '用途',
       field: 'purpose',
     },
-  ];
+  ], []);
 
-  const detailCellRendererParams: IDetailCellRendererParams = {
+  const detailCellRendererParams = useMemo(() => ({
     detailGridOptions: {
       columnDefs: level2ColumnDefs,
       defaultColDef: {
@@ -413,6 +417,7 @@ const FundClearingWorkstation: React.FC = () => {
       rowSelection: 'multiple',
       suppressRowClickSelection: true,
       suppressCellFocus: true,
+      suppressRowDeselection: false,
       detailCellRendererParams: {
         detailGridOptions: {
           columnDefs: level3ColumnDefs,
@@ -425,6 +430,7 @@ const FundClearingWorkstation: React.FC = () => {
           rowSelection: 'multiple',
           suppressRowClickSelection: true,
           suppressCellFocus: true,
+          suppressRowDeselection: false,
           detailCellRendererParams: {
             detailGridOptions: {
               columnDefs: level4ColumnDefs,
@@ -436,6 +442,7 @@ const FundClearingWorkstation: React.FC = () => {
               suppressRowClickSelection: true,
               detailRowAutoHeight: true,
               suppressCellFocus: true,
+              suppressRowDeselection: false,
             },
             getDetailRowData: (params: any) => {
               params.successCallback(params.data.tradeOrders || []);
@@ -450,7 +457,7 @@ const FundClearingWorkstation: React.FC = () => {
     getDetailRowData: (params: any) => {
       params.successCallback(params.data.custodyInstitutions || []);
     },
-  };
+  }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -466,7 +473,7 @@ const FundClearingWorkstation: React.FC = () => {
           <div className="ag-theme-alpine h-full">
             <AgGridReact
               ref={gridRef}
-              rowData={fundData}
+              rowData={memoizedFundData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               masterDetail={true}
@@ -476,10 +483,11 @@ const FundClearingWorkstation: React.FC = () => {
               suppressRowClickSelection={true}
               onGridReady={onGridReady}
               onSelectionChanged={onSelectionChanged}
+              suppressRowDeselection={false}
               groupDefaultExpanded={0}
               animateRows={false}
               enableCellTextSelection={true}
-             suppressCellFocus={true}
+              suppressCellFocus={true}
             />
           </div>
         </div>

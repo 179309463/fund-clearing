@@ -1,6 +1,60 @@
+// 定义数据类型
+export interface TradeOrder {
+  id: string;
+  instructionStatus: string;
+  validStatus: string;
+  fundSettlementStatus: string;
+  tradeOrderNumber: string;
+  tradeType: string;
+  tradeVarietyCode: string;
+  tradeVariety: string;
+  bondName: string;
+  settlementDate: string;
+  settlementMethod: string;
+  settlementAmount: number;
+  purpose: string;
+}
+
+export interface TransferInstruction {
+  id: string;
+  transferInstructionNumber: string;
+  transferInstructionAmount: number;
+  transferProgress: string;
+  tradeOrders: TradeOrder[];
+}
+
+export interface CustodyInstitution {
+  id: string;
+  autoClearingStatus: string;
+  transferApplicationStatus: string;
+  pendingReminder: string;
+  accountingProgress: string;
+  custodyProgress: string;
+  custodyInstitution: string;
+  accountBalance: number;
+  effectiveSettlementBalance: number;
+  generatedTransferAmount: number;
+  ungeneratedTransferAmount: number;
+  transferInstructions: TransferInstruction[];
+}
+
+export interface FundData {
+  id: string;
+  fundCode: string;
+  fundName: string;
+  ossBankBalance: number;
+  endDayBankDeposit: number;
+  endDayBankDepositWithInquiry: number;
+  custodyBank: string;
+  trader1: string;
+  trader2: string;
+  requiredTransferAmount: number;
+  custodyInstitutions: CustodyInstitution[];
+}
+
 // 生成基金数据的函数
-function generateFundData() {
-  const fundData = [];
+function generateFundData(): FundData[] {
+  const fundData: FundData[] = [];
   
   // 基础数据模板
   const fundNames = [
@@ -87,8 +141,8 @@ function generateFundData() {
             instructionStatus: Math.random() > 0.5 ? '已生成' : '未生成',
             validStatus: validStatuses[Math.floor(Math.random() * validStatuses.length)],
             fundSettlementStatus: settlementStatuses[Math.floor(Math.random() * settlementStatuses.length)],
-            tradeOrderNumber: fundIndex.toString().repeat(20).substr(0, 20).replace(/.{4}/g, (match, offset) => 
-              match.split('').map(char => String(parseInt(char) + orderNumber % 10).substr(-1)).join('')
+            tradeOrderNumber: fundIndex.toString().repeat(20).substring(0, 20).replace(/.{4}/g, (match) => 
+              match.split('').map(char => String(parseInt(char) + orderNumber % 10).slice(-1)).join('')
             ),
             tradeType: tradeTypes[Math.floor(Math.random() * tradeTypes.length)],
             tradeVarietyCode: `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`,
@@ -115,5 +169,15 @@ function generateFundData() {
   return fundData;
 }
 
-// 导出生成的数据
-export const fundData = generateFundData();
+// 导出生成的数据 - 只生成一次，避免每次导入都重新生成
+let _fundData: any[] | null = null;
+
+export const getFundData = () => {
+  if (_fundData === null) {
+    _fundData = generateFundData();
+  }
+  return _fundData;
+};
+
+// 为了保持向后兼容，导出静态数据
+export const fundData = getFundData();
