@@ -17,6 +17,8 @@ const FundClearingWorkstation: React.FC = () => {
   const [operationPanelHeight, setOperationPanelHeight] = useState(160);
   const [selectedCount, setSelectedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [tradeOrderSelectedCount, setTradeOrderSelectedCount] = useState(0);
+  const [tradeOrderTotalCount, setTradeOrderTotalCount] = useState(0);
   const [statusFilters, setStatusFilters] = useState({
     bondDistribution: false,
     fundManagerUnconfirmed: false,
@@ -83,15 +85,54 @@ const FundClearingWorkstation: React.FC = () => {
     return count;
   }, []);
 
+  const calculateTradeOrderTotalCount = useCallback((data: FundData[]): number => {
+    let count = 0;
+    data.forEach(fund => {
+      fund.custodyInstitutions?.forEach(custody => {
+        custody.transferInstructions?.forEach(transfer => {
+          count += transfer.tradeOrders?.length || 0;
+        });
+      });
+    });
+    return count;
+  }, []);
+
   useEffect(() => {
     const total = calculateTotalCount(memoizedFundData);
+    const tradeOrderTotal = calculateTradeOrderTotalCount(memoizedFundData);
     setTotalCount(total);
-  }, [calculateTotalCount, memoizedFundData]);
+    setTradeOrderTotalCount(tradeOrderTotal);
+  }, [calculateTotalCount, calculateTradeOrderTotalCount, memoizedFundData]);
+
+  // 用于存储所有网格实例的引用
+  const gridInstances = useRef<Set<any>>(new Set());
+
+  const updateTradeOrderSelection = useCallback(() => {
+    let tradeOrderSelected = 0;
+    
+    // 遍历所有网格实例，统计第4层（成交单）的选中数量
+    gridInstances.current.forEach(gridApi => {
+      if (gridApi && gridApi.getSelectedNodes) {
+        const selectedNodes = gridApi.getSelectedNodes();
+        // 检查是否是第4层网格（成交单层）
+        selectedNodes.forEach(node => {
+          if (node.data && node.data.tradeOrderNumber) {
+            tradeOrderSelected++;
+          }
+        });
+      }
+    });
+    
+    setTradeOrderSelectedCount(tradeOrderSelected);
+  }, []);
 
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
     const selectedNodes = event.api.getSelectedNodes();
     setSelectedCount(selectedNodes.length);
-  }, []);
+    
+    // 更新成交单选择统计
+    updateTradeOrderSelection();
+  }, [updateTradeOrderSelection]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     params.api.sizeColumnsToFit();
@@ -418,6 +459,10 @@ const FundClearingWorkstation: React.FC = () => {
       suppressRowClickSelection: true,
       suppressCellFocus: true,
       suppressRowDeselection: false,
+      onGridReady: (params: any) => {
+        gridInstances.current.add(params.api);
+      },
+      onSelectionChanged: updateTradeOrderSelection,
       detailCellRendererParams: {
         detailGridOptions: {
           columnDefs: level3ColumnDefs,
@@ -431,6 +476,10 @@ const FundClearingWorkstation: React.FC = () => {
           suppressRowClickSelection: true,
           suppressCellFocus: true,
           suppressRowDeselection: false,
+          onGridReady: (params: any) => {
+            gridInstances.current.add(params.api);
+          },
+          onSelectionChanged: updateTradeOrderSelection,
           detailCellRendererParams: {
             detailGridOptions: {
               columnDefs: level4ColumnDefs,
@@ -443,6 +492,10 @@ const FundClearingWorkstation: React.FC = () => {
               detailRowAutoHeight: true,
               suppressCellFocus: true,
               suppressRowDeselection: false,
+              onGridReady: (params: any) => {
+                gridInstances.current.add(params.api);
+              },
+              onSelectionChanged: updateTradeOrderSelection,
             },
             getDetailRowData: (params: any) => {
               params.successCallback(params.data.tradeOrders || []);
@@ -457,7 +510,7 @@ const FundClearingWorkstation: React.FC = () => {
     getDetailRowData: (params: any) => {
       params.successCallback(params.data.custodyInstitutions || []);
     },
-  }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef]);
+  }), [level2ColumnDefs, level3ColumnDefs, level4ColumnDefs, defaultColDef, updateTradeOrderSelection]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -498,6 +551,8 @@ const FundClearingWorkstation: React.FC = () => {
         ref={operationPanelRef}
         selectedCount={selectedCount}
         totalCount={totalCount}
+        tradeOrderSelectedCount={tradeOrderSelectedCount}
+        tradeOrderTotalCount={tradeOrderTotalCount}
         statusFilters={statusFilters}
         onStatusFilterChange={setStatusFilters}
       />

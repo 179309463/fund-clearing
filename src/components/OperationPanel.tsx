@@ -15,6 +15,8 @@ interface StatusFilters {
 interface OperationPanelProps {
   selectedCount: number;
   totalCount: number;
+  tradeOrderSelectedCount?: number;
+  tradeOrderTotalCount?: number;
   statusFilters: StatusFilters;
   onStatusFilterChange: (filters: StatusFilters) => void;
 }
@@ -22,6 +24,8 @@ interface OperationPanelProps {
 const OperationPanel = forwardRef<HTMLDivElement, OperationPanelProps>(({
   selectedCount,
   totalCount,
+  tradeOrderSelectedCount = 0,
+  tradeOrderTotalCount = 0,
   statusFilters,
   onStatusFilterChange,
 }, ref) => {
@@ -96,7 +100,7 @@ const OperationPanel = forwardRef<HTMLDivElement, OperationPanelProps>(({
           {/* Left: Selected Count */}
           <div className="flex items-center">
             <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md text-sm font-medium">
-              已选：{selectedCount}/{totalCount}
+              已选：{tradeOrderSelectedCount}/{tradeOrderTotalCount}
             </div>
           </div>
 
