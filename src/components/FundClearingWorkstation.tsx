@@ -115,34 +115,34 @@ const FundClearingWorkstation: React.FC = () => {
     const handleRefreshAllGrids = () => {
       console.log('=== Global checkbox refresh triggered ===');
       console.log('Grid instances count:', gridInstances.current.size);
-      
+
       // 只刷新主网格的复选框列
       if (gridRef.current?.api) {
         console.log('Refreshing main grid checkboxes...');
-        gridRef.current.api.refreshCells({ 
-          columns: ['selected'], 
-          force: true 
+        gridRef.current.api.refreshCells({
+          columns: ['selected'],
+          force: true
         });
       }
-      
+
       // 只刷新所有子网格的复选框列
       let refreshCount = 0;
       gridInstances.current.forEach(gridApi => {
         if (gridApi && gridApi.refreshCells) {
           console.log(`Refreshing sub-grid ${refreshCount} checkboxes...`);
-          gridApi.refreshCells({ 
-            columns: ['selected'], 
-            force: true 
+          gridApi.refreshCells({
+            columns: ['selected'],
+            force: true
           });
           refreshCount++;
         }
       });
-      
+
       console.log(`Refreshed checkboxes in ${refreshCount} sub-grids`);
     };
 
     window.addEventListener('refreshAllGrids', handleRefreshAllGrids);
-    
+
     return () => {
       window.removeEventListener('refreshAllGrids', handleRefreshAllGrids);
     };
@@ -151,7 +151,7 @@ const FundClearingWorkstation: React.FC = () => {
   const updateSelectionCounts = useCallback(() => {
     let totalSelected = 0;
     let tradeOrderSelected = 0;
-    
+
     // 统计所有层级的选中数量，使用nodeType进行精确识别
     const countSelected = (items: any[]) => {
       items.forEach(item => {
@@ -195,9 +195,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'expand',
       cellRenderer: 'agGroupCellRenderer',
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 36,
+      maxWidth: 36,
+      minWidth: 36,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -207,9 +207,9 @@ const FundClearingWorkstation: React.FC = () => {
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
       headerComponent: CustomCheckboxHeaderRenderer,
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 28,
+      maxWidth: 28,
+      minWidth: 28,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -289,9 +289,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'expand',
       cellRenderer: 'agGroupCellRenderer',
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 36,
+      maxWidth: 36,
+      minWidth: 36,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -300,9 +300,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 28,
+      maxWidth: 28,
+      minWidth: 28,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -381,9 +381,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'expand',
       cellRenderer: 'agGroupCellRenderer',
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 36,
+      maxWidth: 36,
+      minWidth: 36,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -392,9 +392,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 28,
+      maxWidth: 28,
+      minWidth: 28,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -430,9 +430,9 @@ const FundClearingWorkstation: React.FC = () => {
     {
       headerName: '',
       field: 'indent',
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 36,
+      maxWidth: 36,
+      minWidth: 36,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -442,9 +442,9 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '',
       field: 'selected',
       cellRenderer: CustomCheckboxRenderer,
-      width: 54,
-      maxWidth: 54,
-      minWidth: 54,
+      width: 28,
+      maxWidth: 28,
+      minWidth: 28,
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
@@ -582,7 +582,7 @@ const FundClearingWorkstation: React.FC = () => {
       <div className="bg-white shadow-sm border-b px-6 py-4">
         <h1 className="text-2xl font-semibold text-gray-900">基金清算工作台</h1>
         <p className="text-sm text-gray-600 mt-1">Fund Clearing Workstation - Multi-Level Nested Grid</p>
-        
+
 
 
       </div>
