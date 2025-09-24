@@ -169,6 +169,14 @@ const FundClearingWorkstation: React.FC = () => {
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
+      valueGetter: (params) => params.data?.selected || false,
+      valueSetter: (params) => {
+        if (params.data) {
+          params.data.selected = params.newValue;
+          return true;
+        }
+        return false;
+      },
     },
     {
       headerName: '基金代码',
@@ -255,6 +263,14 @@ const FundClearingWorkstation: React.FC = () => {
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
+      valueGetter: (params) => params.data?.selected || false,
+      valueSetter: (params) => {
+        if (params.data) {
+          params.data.selected = params.newValue;
+          return true;
+        }
+        return false;
+      },
     },
     {
       headerName: '托管机构',
@@ -340,6 +356,14 @@ const FundClearingWorkstation: React.FC = () => {
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
+      valueGetter: (params) => params.data?.selected || false,
+      valueSetter: (params) => {
+        if (params.data) {
+          params.data.selected = params.newValue;
+          return true;
+        }
+        return false;
+      },
     },
     {
       headerName: '划款指令编号',
@@ -383,6 +407,14 @@ const FundClearingWorkstation: React.FC = () => {
       resizable: false,
       suppressSizeToFit: true,
       pinned: 'left',
+      valueGetter: (params) => params.data?.selected || false,
+      valueSetter: (params) => {
+        if (params.data) {
+          params.data.selected = params.newValue;
+          return true;
+        }
+        return false;
+      },
     },
     {
       headerName: '成交单编号',

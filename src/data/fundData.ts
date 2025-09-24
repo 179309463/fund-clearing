@@ -1,6 +1,7 @@
 // 定义数据类型
 export interface TradeOrder {
   id: string;
+  selected: boolean;
   instructionStatus: string;
   validStatus: string;
   fundSettlementStatus: string;
@@ -17,6 +18,7 @@ export interface TradeOrder {
 
 export interface TransferInstruction {
   id: string;
+  selected: boolean;
   transferInstructionNumber: string;
   transferInstructionAmount: number;
   transferProgress: string;
@@ -25,6 +27,7 @@ export interface TransferInstruction {
 
 export interface CustodyInstitution {
   id: string;
+  selected: boolean;
   autoClearingStatus: string;
   transferApplicationStatus: string;
   pendingReminder: string;
@@ -40,6 +43,7 @@ export interface CustodyInstitution {
 
 export interface FundData {
   id: string;
+  selected: boolean;
   fundCode: string;
   fundName: string;
   ossBankBalance: number;
@@ -93,6 +97,7 @@ function generateFundData(): FundData[] {
   for (let fundIndex = 1; fundIndex <= 10; fundIndex++) {
     const fund = {
       id: fundIndex.toString(),
+      selected: false,
       fundCode: `00000${fundIndex}`,
       fundName: fundNames[fundIndex - 1],
       ossBankBalance: fundIndex * 1.00,
@@ -109,6 +114,7 @@ function generateFundData(): FundData[] {
     for (let custodyIndex = 1; custodyIndex <= 4; custodyIndex++) {
       const custody = {
         id: `${fundIndex}-${custodyIndex}`,
+        selected: false,
         autoClearingStatus: statuses[Math.floor(Math.random() * 2)],
         transferApplicationStatus: statuses[Math.floor(Math.random() * 2) + 2],
         pendingReminder: Math.random() > 0.5 ? '已办' : '未办',
@@ -127,6 +133,7 @@ function generateFundData(): FundData[] {
         const instructionId = (fundIndex - 1) * 16 + (custodyIndex - 1) * 4 + instructionIndex;
         const instruction = {
           id: `${fundIndex}-${custodyIndex}-${instructionIndex}`,
+          selected: false,
           transferInstructionNumber: instructionId.toString().padStart(18, '0'),
           transferInstructionAmount: (fundIndex * custodyIndex * instructionIndex) * 50000000.00,
           transferProgress: progressStatuses[Math.floor(Math.random() * progressStatuses.length)],
@@ -138,6 +145,7 @@ function generateFundData(): FundData[] {
           const orderNumber = ((fundIndex - 1) * 64 + (custodyIndex - 1) * 16 + (instructionIndex - 1) * 4 + orderIndex);
           const order = {
             id: `${fundIndex}-${custodyIndex}-${instructionIndex}-${orderIndex}`,
+            selected: false,
             instructionStatus: Math.random() > 0.5 ? '已生成' : '未生成',
             validStatus: validStatuses[Math.floor(Math.random() * validStatuses.length)],
             fundSettlementStatus: settlementStatuses[Math.floor(Math.random() * settlementStatuses.length)],
