@@ -100,8 +100,7 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
 
     // 有未完成的成交单时，根据未完成成交单的选择情况决定
 
-    /* 
-    // 备用：3状态逻辑（全选/半选/未选择）
+
     let result;
     if (stats.selectedUncompletedCount === 0) {
       // 没有未完成成交单被选中
@@ -114,15 +113,7 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
       result = { checked: false, indeterminate: true };
     }
     return result;
-    */
-
-    // 简化为2个状态：只要有未完成成交单被选中就显示为选中状态
-    const result = {
-      checked: stats.selectedUncompletedCount > 0,
-      indeterminate: false
-    };
-
-    return result;
+   
   };
 
   const checkboxState = getCheckboxState();
