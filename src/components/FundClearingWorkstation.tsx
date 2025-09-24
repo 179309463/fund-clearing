@@ -182,6 +182,15 @@ const FundClearingWorkstation: React.FC = () => {
     params.api.sizeColumnsToFit();
   }, []);
 
+  // 双击行切换展开/收起状态
+  const onRowDoubleClicked = useCallback((event: any) => {
+    const node = event.node;
+    if (node && node.master) {
+      // 切换展开状态
+      node.setExpanded(!node.expanded);
+    }
+  }, []);
+
   // 使用useMemo缓存配置对象，避免每次渲染都重新创建
   const defaultColDef: ColDef = useMemo(() => ({
     resizable: true,
@@ -534,6 +543,7 @@ const FundClearingWorkstation: React.FC = () => {
         gridInstances.current.add(params.api);
       },
       onSelectionChanged: updateSelectionCounts,
+      onRowDoubleClicked: onRowDoubleClicked,
       detailCellRendererParams: {
         detailGridOptions: {
           columnDefs: level3ColumnDefs,
@@ -549,6 +559,7 @@ const FundClearingWorkstation: React.FC = () => {
             gridInstances.current.add(params.api);
           },
           onSelectionChanged: updateSelectionCounts,
+          onRowDoubleClicked: onRowDoubleClicked,
           detailCellRendererParams: {
             detailGridOptions: {
               columnDefs: level4ColumnDefs,
@@ -603,6 +614,7 @@ const FundClearingWorkstation: React.FC = () => {
               detailCellRendererParams={detailCellRendererParams}
               onGridReady={onGridReady}
               onSelectionChanged={onSelectionChanged}
+              onRowDoubleClicked={onRowDoubleClicked}
               groupDefaultExpanded={0}
               animateRows={false}
               enableCellTextSelection={true}
