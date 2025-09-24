@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { MasterDetailModule } from 'ag-grid-enterprise';
 import '../styles/custom-checkbox.css';
 
-import { fundData, FundData } from '../data/fundData';
+import { fundData, FundData, NodeType } from '../data/fundData';
 import OperationPanel from './OperationPanel';
 import StatusBadge from './StatusBadge';
 import CustomCheckboxRenderer from './CustomCheckboxRenderer';
@@ -114,33 +114,18 @@ const FundClearingWorkstation: React.FC = () => {
     let totalSelected = 0;
     let tradeOrderSelected = 0;
     
-    // 统计所有层级的选中数量
+    // 统计所有层级的选中数量，使用nodeType进行精确识别
     const countSelected = (items: any[]) => {
       items.forEach(item => {
         if (item.selected) {
           totalSelected++;
+          // 如果是成交单节点，同时计入成交单统计
+          if (item.nodeType === NodeType.TRADE_ORDER) {
+            tradeOrderSelected++;
+          }
         }
         if (item.children) {
-          item.children.forEach((custody: any) => {
-            if (custody.selected) {
-              totalSelected++;
-            }
-            if (custody.children) {
-              custody.children.forEach((transfer: any) => {
-                if (transfer.selected) {
-                  totalSelected++;
-                }
-                if (transfer.children) {
-                  transfer.children.forEach((order: any) => {
-                    if (order.selected) {
-                      totalSelected++;
-                      tradeOrderSelected++;
-                    }
-                  });
-                }
-              });
-            }
-          });
+          countSelected(item.children);
         }
       });
     };

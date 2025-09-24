@@ -1,6 +1,15 @@
+// 定义节点类型枚举
+export enum NodeType {
+  FUND = 'fund',           // 第1层：基金
+  CUSTODY = 'custody',     // 第2层：托管机构
+  INSTRUCTION = 'instruction', // 第3层：划款指令
+  TRADE_ORDER = 'tradeOrder'   // 第4层：成交单
+}
+
 // 定义数据类型
 export interface TradeOrder {
   id: string;
+  nodeType: NodeType.TRADE_ORDER;
   selected: boolean;
   instructionStatus: string;
   validStatus: string;
@@ -19,6 +28,7 @@ export interface TradeOrder {
 
 export interface TransferInstruction {
   id: string;
+  nodeType: NodeType.INSTRUCTION;
   selected: boolean;
   transferInstructionNumber: string;
   transferInstructionAmount: number;
@@ -28,6 +38,7 @@ export interface TransferInstruction {
 
 export interface CustodyInstitution {
   id: string;
+  nodeType: NodeType.CUSTODY;
   selected: boolean;
   autoClearingStatus: string;
   transferApplicationStatus: string;
@@ -44,6 +55,7 @@ export interface CustodyInstitution {
 
 export interface FundData {
   id: string;
+  nodeType: NodeType.FUND;
   selected: boolean;
   fundCode: string;
   fundName: string;
@@ -98,6 +110,7 @@ function generateFundData(): FundData[] {
   for (let fundIndex = 1; fundIndex <= 10; fundIndex++) {
     const fund = {
       id: fundIndex.toString(),
+      nodeType: NodeType.FUND,
       selected: false,
       fundCode: `00000${fundIndex}`,
       fundName: fundNames[fundIndex - 1],
@@ -115,6 +128,7 @@ function generateFundData(): FundData[] {
     for (let custodyIndex = 1; custodyIndex <= 4; custodyIndex++) {
       const custody = {
         id: `${fundIndex}-${custodyIndex}`,
+        nodeType: NodeType.CUSTODY,
         selected: false,
         autoClearingStatus: statuses[Math.floor(Math.random() * 2)],
         transferApplicationStatus: statuses[Math.floor(Math.random() * 2) + 2],
@@ -134,6 +148,7 @@ function generateFundData(): FundData[] {
         const instructionId = (fundIndex - 1) * 16 + (custodyIndex - 1) * 4 + instructionIndex;
         const instruction = {
           id: `${fundIndex}-${custodyIndex}-${instructionIndex}`,
+          nodeType: NodeType.INSTRUCTION,
           selected: false,
           transferInstructionNumber: instructionId.toString().padStart(18, '0'),
           transferInstructionAmount: (fundIndex * custodyIndex * instructionIndex) * 50000000.00,
@@ -146,6 +161,7 @@ function generateFundData(): FundData[] {
           const orderNumber = ((fundIndex - 1) * 64 + (custodyIndex - 1) * 16 + (instructionIndex - 1) * 4 + orderIndex);
           const order = {
             id: `${fundIndex}-${custodyIndex}-${instructionIndex}-${orderIndex}`,
+            nodeType: NodeType.TRADE_ORDER,
             selected: false,
             instructionStatus: Math.random() > 0.5 ? '已生成' : '未生成',
             validStatus: validStatuses[Math.floor(Math.random() * validStatuses.length)],
