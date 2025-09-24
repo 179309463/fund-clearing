@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ICellRendererParams } from 'ag-grid-community';
 import { NodeType } from '../data/fundData';
 
@@ -36,16 +36,21 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
   };
 
   // 递归设置所有子节点的选择状态
-  const cascadeSelection = (nodeData: any, selected: boolean) => {
+  const cascadeSelection = (nodeData: any, selected: boolean, isFromIndeterminate: boolean = false) => {
     const traverse = (item: any) => {
       if (item.nodeType === NodeType.TRADE_ORDER) {
         // 成交单节点
         if (selected) {
-          // 勾选时：只选择未完成状态的成交单
-          if (item.instructionStatus === '未生成') {
+          if (isFromIndeterminate) {
+            // 从半选状态切换到选中：选择所有成交单，不管状态
             item.selected = true;
+          } else {
+            // 从未选状态切换到选中：只选择未生成状态的成交单
+            if (item.instructionStatus === '未生成') {
+              item.selected = true;
+            }
+            // 已生成的成交单保持原状态不变
           }
-          // 已完成的成交单保持原状态不变
         } else {
           // 取消勾选时：取消所有成交单的选择（不管状态）
           item.selected = false;
@@ -56,9 +61,9 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
           item.children.forEach(traverse);
         }
 
-        // 处理完子节点后，根据子节点的未完成成交单状态决定自己的状态
+        // 处理完子节点后，根据子节点的成交单状态决定自己的状态
         if (selected) {
-          // 勾选时：只有当有未完成成交单被选中时，才选中自己
+          // 勾选时：只有当有成交单被选中时，才选中自己
           const stats = getTradeOrderStats(item);
           item.selected = stats.selectedCount > 0;
         } else {
@@ -110,15 +115,13 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
       result = { checked: false, indeterminate: true };
     }
     return result;
-   
+
   };
 
   const checkboxState = getCheckboxState();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.checked;
-
-
 
     if (data) {
       // 设置当前节点的状态
@@ -130,7 +133,12 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
       } else {
         // 对于第1/2/3层级，执行级联选择
         console.log(`Starting cascade for ${data.id}...`);
-        cascadeSelection(data, newValue);
+
+        // 判断当前是否为半选状态
+        const currentCheckboxState = getCheckboxState();
+        const isFromIndeterminate = currentCheckboxState.indeterminate;
+
+        cascadeSelection(data, newValue, isFromIndeterminate);
 
         const statsAfter = getTradeOrderStats(data);
         console.log(`Cascade completed. Stats:`, statsAfter);
