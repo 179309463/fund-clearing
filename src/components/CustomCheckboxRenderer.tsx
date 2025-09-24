@@ -14,18 +14,15 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
   const [, forceUpdate] = useState({});
 
   // 递归统计所有成交单的选择状态
-  const getTradeOrderStats = (nodeData: any): { selectedUncompletedCount: number; totalUncompletedCount: number } => {
-    let selectedUncompletedCount = 0;
-    let totalUncompletedCount = 0;
+  const getTradeOrderStats = (nodeData: any): { selectedCount: number; totalCount: number } => {
+    let selectedCount = 0;
+    let totalCount = 0;
 
     const traverse = (item: any) => {
       if (item.nodeType === NodeType.TRADE_ORDER) {
-        const isUncompleted = item.instructionStatus === '未生成';
-        if (isUncompleted) {
-          totalUncompletedCount++;
-          if (item.selected) {
-            selectedUncompletedCount++;
-          }
+        totalCount++;
+        if (item.selected) {
+          selectedCount++;
         }
       }
 
@@ -35,7 +32,7 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
     };
 
     traverse(nodeData);
-    return { selectedUncompletedCount, totalUncompletedCount };
+    return { selectedCount, totalCount };
   };
 
   // 递归设置所有子节点的选择状态
@@ -63,7 +60,7 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
         if (selected) {
           // 勾选时：只有当有未完成成交单被选中时，才选中自己
           const stats = getTradeOrderStats(item);
-          item.selected = stats.selectedUncompletedCount > 0;
+          item.selected = stats.selectedCount > 0;
         } else {
           // 取消勾选时：直接取消选择
           item.selected = false;
@@ -94,7 +91,7 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
 
 
     // 如果没有未完成的成交单，则根据自身状态决定
-    if (stats.totalUncompletedCount === 0) {
+    if (stats.totalCount === 0) {
       return { checked: data.selected || false, indeterminate: false };
     }
 
@@ -102,10 +99,10 @@ const CustomCheckboxRenderer: React.FC<CustomCheckboxRendererProps> = ({ data, a
 
 
     let result;
-    if (stats.selectedUncompletedCount === 0) {
+    if (stats.selectedCount === 0) {
       // 没有未完成成交单被选中
       result = { checked: false, indeterminate: false };
-    } else if (stats.selectedUncompletedCount === stats.totalUncompletedCount) {
+    } else if (stats.selectedCount === stats.totalCount) {
       // 所有未完成成交单都被选中
       result = { checked: true, indeterminate: false };
     } else {
