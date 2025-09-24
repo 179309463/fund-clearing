@@ -328,6 +328,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '托管机构',
       field: 'custodyInstitution',
       minWidth: 262,
+      resizable: false,
       pinned: 'left',
     },
     {
@@ -420,6 +421,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '划款指令编号',
       field: 'transferInstructionNumber',
       minWidth: 230,
+      resizable: false,
       pinned: 'left',
     },
     {
@@ -470,6 +472,7 @@ const FundClearingWorkstation: React.FC = () => {
       headerName: '成交单编号',
       field: 'tradeOrderNumber',
       minWidth: 150,
+      resizable: false,
       pinned: 'left',
     },
     {
