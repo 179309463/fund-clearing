@@ -1,73 +1,4 @@
-// 定义节点类型枚举
-export enum NodeType {
-  FUND = 'fund',           // 第1层：基金
-  CUSTODY = 'custody',     // 第2层：托管机构
-  INSTRUCTION = 'instruction', // 第3层：划款指令
-  TRADE_ORDER = 'tradeOrder'   // 第4层：成交单
-}
-
-// 定义数据类型
-export interface TradeOrder {
-  id: string;
-  nodeType: NodeType;
-  selected: boolean;
-  instructionStatus: string;
-  validStatus: string;
-  fundSettlementStatus: string;
-  tradeOrderNumber: string;
-  tradeType: string;
-  tradeVarietyCode: string;
-  tradeVariety: string;
-  bondName: string;
-  settlementDate: string;
-  settlementMethod: string;
-  settlementAmount: number;
-  purpose: string;
-  children?: TradeOrder[]; // 第4层没有子节点，但类型上保持一致
-}
-
-export interface TransferInstruction {
-  id: string;
-  nodeType: NodeType;
-  selected: boolean;
-  transferInstructionNumber: string;
-  transferInstructionAmount: number;
-  transferProgress: string;
-  children: TradeOrder[];
-}
-
-export interface CustodyInstitution {
-  id: string;
-  nodeType: NodeType;
-  selected: boolean;
-  autoClearingStatus: string;
-  transferApplicationStatus: string;
-  pendingReminder: string;
-  accountingProgress: string;
-  custodyProgress: string;
-  custodyInstitution: string;
-  accountBalance: number;
-  effectiveSettlementBalance: number;
-  generatedTransferAmount: number;
-  ungeneratedTransferAmount: number;
-  children: TransferInstruction[];
-}
-
-export interface FundData {
-  id: string;
-  nodeType: NodeType;
-  selected: boolean;
-  fundCode: string;
-  fundName: string;
-  ossBankBalance: number;
-  endDayBankDeposit: number;
-  endDayBankDepositWithInquiry: number;
-  custodyBank: string;
-  trader1: string;
-  trader2: string;
-  requiredTransferAmount: number;
-  children: CustodyInstitution[];
-}
+import { FundData, NodeType } from '../types/fundData'
 
 // 生成基金数据的函数
 function generateFundData(): FundData[] {
@@ -125,7 +56,7 @@ function generateFundData(): FundData[] {
     };
 
     // 每个基金生成1-3个托管机构
-    const custodyCount = Math.floor(Math.random() * 3) + 1; // 1-3个
+    const custodyCount = Math.floor(Math.random() * 3) + 1;
     for (let custodyIndex = 1; custodyIndex <= custodyCount; custodyIndex++) {
       const custody = {
         id: `${fundIndex}-${custodyIndex}`,
@@ -145,7 +76,7 @@ function generateFundData(): FundData[] {
       };
 
       // 每个托管机构生成1-3个划款指令
-      const instructionCount = Math.floor(Math.random() * 3) + 1; // 1-3个
+      const instructionCount = Math.floor(Math.random() * 3) + 1;
       for (let instructionIndex = 1; instructionIndex <= instructionCount; instructionIndex++) {
         const instructionId = `${fundIndex}${custodyIndex}${instructionIndex}`.padStart(6, '0');
         const instruction = {
@@ -159,7 +90,7 @@ function generateFundData(): FundData[] {
         };
 
         // 每个划款指令生成3-5个成交单
-        const orderCount = Math.floor(Math.random() * 3) + 3; // 3-5个
+        const orderCount = Math.floor(Math.random() * 3) + 3;
         for (let orderIndex = 1; orderIndex <= orderCount; orderIndex++) {
           const orderNumber = parseInt(`${fundIndex}${custodyIndex}${instructionIndex}${orderIndex}`);
           const order = {
@@ -197,7 +128,7 @@ function generateFundData(): FundData[] {
   return fundData;
 }
 
-// 导出生成的数据 - 每次都重新生成以获得随机数量
+// 导出生成的数据
 export const getFundData = () => {
   return generateFundData();
 };
